@@ -13,21 +13,43 @@ class WeatherPage extends StatefulWidget {
 
 class _WeatherPageState extends State<WeatherPage> {
   //api key
-  final _weatherService = WeatherServices(dotenv.env['API_KEY']!);
+  final _weatherService = WeatherServices();
   Weather? _weather;
 
-  _fetchWeather() async {
-    //get the current city
-    String cityName = await _weatherService.getCurrentCity();
+  String _error = '';
+  String _cityName = ''; // Variable to store the city name being sent
 
-    //get weather for city
+  _fetchWeather() async {
     try {
-      final Weather = await _weatherService.getWeather(cityName);
+      // Fetch the city name
+      String cityName = await _weatherService.getCurrentCity();
+
+      // Save the city name to show what is being sent to the API
       setState(() {
-        _weather = Weather;
+        _cityName = cityName;
+      });
+
+      // Fetch the weather data for the city
+      final weather = await _weatherService.getWeather(cityName);
+
+      setState(() {
+        _weather = weather;
+        _error = '';
       });
     } catch (e) {
-      print(e);
+      setState(() {
+        _error = e.toString();
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 
@@ -78,14 +100,37 @@ class _WeatherPageState extends State<WeatherPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // city name
-            Text(_weather?.cityName ?? "Loading city"),
+            // ✅ Show error if any
+            if (_error.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Error: $_error',
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
 
-            //animation
+            // ✅ Show the city name that was sent to the API
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                _cityName.isNotEmpty ? "City : $_cityName" : "Loading city...",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            // city name
+            Text(_weather?.cityName ?? "Loading city..."),
+
+            // animation
             Lottie.asset(getWeatherAnimation(_weather?.mainCondition)),
 
             // temperature
-            Text('${_weather?.temperature.round()}°C')
+            Text(
+              _weather != null ? '${_weather!.temperature.round()}°C' : "",
+            ),
           ],
         ),
       ),
