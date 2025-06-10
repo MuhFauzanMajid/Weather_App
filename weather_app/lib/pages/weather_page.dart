@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/weather_services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 
 class WeatherPage extends StatefulWidget {
   const WeatherPage({super.key});
@@ -95,43 +95,115 @@ class _WeatherPageState extends State<WeatherPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    final DateTime tanggal = DateTime.now();
+
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // ✅ Show error if any
-            if (_error.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Error: $_error',
-                  style: TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
+      body: Container(
+        width: screenSize.width,
+        height: screenSize.height,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/Background.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).padding.top + 20,
+              ),
+              Container(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color:
+                      Colors.green.withOpacity(0.7), // Warna hijau transparan
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    // ✅ Show error if any
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Today',
+                          style: TextStyle(
+                            fontSize:
+                                24, // Membuat teks lebih besar. Sesuaikan nilainya sesuai keinginan.
+                            fontWeight:
+                                FontWeight.bold, // Membuat teks menjadi tebal
+                            color: Colors.black.withOpacity(0.6),
+                          ),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Colors.black.withOpacity(0.6),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment
+                          .center, // Pusatkan konten Row secara horizontal
+                      children: [
+                        // Animasi Lottie
+                        Lottie.asset(
+                          getWeatherAnimation(_weather?.mainCondition),
+                          height: 100, // Ukuran tinggi animasi
+                          width: 100, // Ukuran lebar animasi
+                        ),
+                        const SizedBox(
+                            width:
+                                10), // Memberi sedikit jarak antara animasi dan suhu
+
+                        // Suhu
+                        Text(
+                          _weather != null
+                              ? '${_weather!.temperature.round()}°'
+                              : "",
+                          style: TextStyle(
+                            fontSize: 60,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      _weather?.mainCondition ?? "Loading...",
+                      style: TextStyle(
+                          fontSize: 24,
+                          color: Colors.black.withOpacity(0.6),
+                          fontWeight: FontWeight.bold),
+                    ),
+
+                    // ✅ Show the city name that was sent to the API
+                    Text(
+                      _cityName.isNotEmpty ? "$_cityName" : "Loading city...",
+                      style: TextStyle(
+                          fontSize: 24,
+                          color: Colors.black.withOpacity(0.6),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      // Langsung memformat objek DateTime
+                      DateFormat('EEEE dd/MMMM/yyyy').format(tanggal),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-
-            // ✅ Show the city name that was sent to the API
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                _cityName.isNotEmpty ? "City : $_cityName" : "Loading city...",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-
-            // city name
-            Text(_weather?.cityName ?? "Loading city..."),
-
-            // animation
-            Lottie.asset(getWeatherAnimation(_weather?.mainCondition)),
-
-            // temperature
-            Text(
-              _weather != null ? '${_weather!.temperature.round()}°C' : "",
-            ),
-          ],
+          ),
         ),
       ),
     );

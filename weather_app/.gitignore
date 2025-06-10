@@ -11,6 +11,12 @@
 .env
 migrate_working_dir/
 
+# Android build artifacts
+**/android/app/.cxx/
+**/android/app/build/
+**/android/.gradle/
+**/android/.idea/
+
 # IntelliJ related
 *.iml
 *.ipr
